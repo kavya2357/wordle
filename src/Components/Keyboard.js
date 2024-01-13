@@ -1,66 +1,41 @@
-import React,{useCallback, useEffect,useContext} from 'react'
-import Key from './Key'
-import { AppContext } from '../App';
+import React,{useEffect} from 'react';
+import { keys } from './keys';
+import './Keyboard.css';
 
-function Keyboard() {
-    const {onSelectLetter,onDelete,onEnter,disabledLetters}=useContext(AppContext);
+// const Keyboard = ({boardData,handleKeyPress}) => {
+const Keyboard = ({ boardData, handleKeyPress }) => {
+  
+    function handleKeyboard(key) { 
+        if (key.key === "Enter")
+            handleKeyPress("ENTER")
+        if (key.key === "Backspace")
+            handleKeyPress("⌫")
+        if (key.key.length === 1 && key.key.toLowerCase() !== key.key.toUpperCase())
+            handleKeyPress(key.key.toUpperCase())
+    }
+    useEffect(() => {          
+        window.addEventListener("keydown", handleKeyboard)
 
-    const keys1 = ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"];
-    const keys2 = ["A", "S", "D", "F", "G", "H", "J", "K", "L"];
-    const keys3 = ["Z", "X", "C", "V", "B", "N", "M"];
-
-    const handleKeyboard=useCallback((event) =>{
-        if(event.key==="Enter"){
-            onEnter();
-        }
-        else if(event.key==="Backspace"){
-            onDelete();
-        }else{
-            keys1.forEach((key)=>{
-                if(event.key.toLowerCase()===key.toLowerCase()){
-                    onSelectLetter(key);
+        return () => { window.removeEventListener("keydown", handleKeyboard) }
+    }, [handleKeyPress])
+  return (<div className='keyboard-rows' >
+      {keys.map((item,index)=>(
+            <div className='row' key={index}>
+                {
+                    item.map((key,keyIndex)=>(
+                        <button key={keyIndex} 
+                            className={`${boardData && boardData.correctCharArray.includes(key)?"key-correct":
+                            (boardData && boardData.presentCharArray.includes(key) ?"key-present":
+                            boardData && boardData.absentCharArray.includes(key)?"key-absent":"")} `} 
+                            onClick={()=>{handleKeyPress(key)}}>
+                            {key}
+                        </button>
+                    ))
                 }
-            })
-            keys2.forEach((key)=>{
-                if(event.key.toLowerCase()===key.toLowerCase()){
-                    onSelectLetter(key);
-                }
-            })
-            keys3.forEach((key)=>{
-                if(event.key.toLowerCase()===key.toLowerCase()){
-                    onSelectLetter(key);
-                }
-            })
-        }
-    })
-    useEffect(()=>{
-        document.addEventListener("keydown",handleKeyboard);
+            </div>
+            ))}
+           
+        </div>);
+};
 
-        return()=>{
-            document.removeEventListener("keydown",handleKeyboard);
-        };
-    },[handleKeyboard]);
-  return (
-    <div className='keyboard' onKeyDown={handleKeyboard}>
-        <div className='line1'>
-            {keys1.map((key)=>{
-                return <Key keyVal={key} disabled={disabledLetters.includes(key)}/>
-            })}
-        </div>
-        <div className='line2'>
-            {keys2.map((key)=>{
-                return <Key keyVal={key} disabled={disabledLetters.includes(key)}/>
-            })}
-        </div>
-        <div className='line3'>
-            <Key keyVal={"ENTER"} bigKey/>
-            {keys3.map((key)=>{
-                return <Key keyVal={key} disabled={disabledLetters.includes(key)}/>
-            })}
-            <Key keyVal={"DELETE"} bigKey/>
-        </div>
-    </div>
-  )
-}
-
-export default Keyboard
+export default Keyboard;
